@@ -42,6 +42,11 @@ fn trim_line_end() {
     assert_eq!(trim_line("abcm\x1bdefm"), "abcm");
 }
 
+#[test]
+fn trim_line_two_sequences() {
+    assert_eq!(trim_line("abc\x1bdefmgh\x1bimjk"), "abcghjk");
+}
+
 fn reverse_errors(stderr: std::io::BufReader<std::process::ChildStderr>) {
     let mut errors = Vec::<Vec<String>>::new();
     let mut current_error = Vec::<String>::new();
@@ -65,7 +70,7 @@ fn reverse_errors(stderr: std::io::BufReader<std::process::ChildStderr>) {
                 let is_title = ch.is_ascii_alphabetic();
                 let is_empty = current_error.is_empty();
                 if is_title || is_empty {
-                    println!("{}", line);
+                    eprintln!("{}", line);
                 }
                 if is_title || !is_empty {
                     current_error.push(line.clone());
@@ -74,16 +79,16 @@ fn reverse_errors(stderr: std::io::BufReader<std::process::ChildStderr>) {
         }
     }
     if !errors.is_empty() {
-        println!("{}", "-".repeat(60));
+        eprintln!("{}", "-".repeat(60));
         for error in errors.iter().rev() {
             for line in error {
-                println!("{}", line);
+                eprintln!("{}", line);
             }
-            println!();
+            eprintln!();
         }
         if !current_error.is_empty() {
             for line in current_error {
-                println!("{}", line);
+                eprintln!("{}", line);
             }
         }
     }
@@ -128,35 +133,9 @@ fn main() {
     }
 
     let mut child = command
-        .stdout(Stdio::piped())
         .stderr(Stdio::piped())
         .spawn()
         .expect("Failed to launch the program.");
-    let stdout = child.stdout.take().expect("no stdout");
     let stderr = child.stderr.take().expect("no stderr");
-
-    let read_stderr = std::thread::spawn(|| {
-        reverse_errors(std::io::BufReader::new(stderr));
-    });
-
-    let mut out_reader = std::io::BufReader::new(stdout);
-    loop {
-        let mut line = String::new();
-        if out_reader.read_line(&mut line).unwrap() == 0 {
-            break;
-        }
-        print!("{}", line);
-    }
-
-    read_stderr.join().unwrap();
-}
-
-#[test]
-fn dummy() {
-    assert_eq!(2 + 3, 5);
-}
-
-#[test]
-fn dummy2() {
-    assert_eq!(2 + 3, 6);
+    reverse_errors(std::io::BufReader::new(stderr));
 }

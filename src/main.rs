@@ -96,15 +96,15 @@ fn reverse_errors(stderr: std::io::BufReader<std::process::ChildStderr>) {
 
 fn main() {
     let has_color_support =
-        supports_color::on(supports_color::Stream::Stderr).is_some();
+        supports_color::on(supports_color::Stream::Stdout).is_some();
 
     // Launch "cargo", passing to it all the arguments of the current command line
     let mut command = Command::new("cargo");
     let mut in_cargo_arguments = true;
     let mut for_testing = false;
     let mut has_color_option = false;
-    for arg in std::env::args().skip(1) {
-        if arg.starts_with("--color") {
+    for arg in std::env::args_os().skip(1) {
+        if arg.to_string_lossy().starts_with("--color") {
             has_color_option = true;
         }
         if in_cargo_arguments {

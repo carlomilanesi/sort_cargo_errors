@@ -95,6 +95,9 @@ fn reverse_errors(stderr: std::io::BufReader<std::process::ChildStderr>) {
 }
 
 fn main() {
+    let has_color_support =
+        supports_color::on(supports_color::Stream::Stderr).is_some();
+
     // Launch "cargo", passing to it all the arguments of the current command line
     let mut command = Command::new("cargo");
     let mut in_cargo_arguments = true;
@@ -112,22 +115,23 @@ fn main() {
             if arg == "--" {
                 if has_color_option {
                     has_color_option = false;
-                } else {
+                } else if has_color_support {
                     command.arg("--color=always");
                 }
+
                 in_cargo_arguments = false;
             }
         }
         command.arg(&arg);
     }
-    if in_cargo_arguments && !has_color_option {
+    if in_cargo_arguments && !has_color_option && has_color_support {
         command.arg("--color=always");
     }
     if for_testing {
         if in_cargo_arguments {
             command.arg("--");
         }
-        if in_cargo_arguments || !has_color_option {
+        if (in_cargo_arguments || !has_color_option) && has_color_support {
             command.arg("--color=always");
         }
     }

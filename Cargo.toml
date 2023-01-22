@@ -1,7 +1,13 @@
 [package]
-name = "sort_cargo_errors"
-version = "0.1.0"
+name = "sort-cargo-errors"
+version = "1.0.0"
 edition = "2021"
+authors = ["Carlo Milanesi <carlo.milanesi@libero.it>"]
+description = "A tool that launches Cargo and prints its errors and warnings in reversed order."
+repository = "https://github.com/carlomilanesi/sort_cargo_errors"
+license = "MIT"
+readme = "README.md"
+keywords = ["development", "cargo"]
 
 [dependencies]
 supports-color = "2.0.0"
